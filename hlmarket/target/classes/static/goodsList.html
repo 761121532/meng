@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>测试ui框架页面</title>
+    <!-- 引入elementui.css -->
+    <link rel="stylesheet" href="./lib/elementui/css/elementui.css">
+    <!-- 引入重置样式 -->
+    <link rel="stylesheet" href="./styles/reset.css">
+    <!-- 引入自定义样式index.css -->
+    <link rel="stylesheet" href="./styles/index.css">
+    <!-- 检查用户是否登录 -->
+    <script src="/users/checkLogin"></script>
+
+</head>
+
+<body>
+
+    <!-- 准备dom -->
+    <div id="app">
+        <el-container>
+            <!-- 右边部分 -->
+            <el-container>
+                <!-- 右边头部 -->
+                <el-header>
+                    <h1>欢迎您, admin</h1>
+                    <p>查看详细的系统信息</p>
+                </el-header>
+
+                <!-- 右边主体 -->
+                <el-main>
+                    <el-card class="box-card">
+                        <div slot="header" class="clearfix">
+                            <span>商品管理</span>
+                        </div>
+                        <div style="text-align: left">
+                            <el-form :inline="true" :model="searchForm" class="demo-form-inline">
+                                <el-form-item label="所属分类">
+                                    <el-select v-model="searchForm.searchCateName" placeholder="请选择分类">
+                                        <el-option label="全部" value="全部"></el-option>
+                                        <el-option label="玩具类" value="玩具类"></el-option>
+                                        <el-option label="日用品" value="日用品"></el-option>
+                                        <el-option label="水果" value="水果"></el-option>
+                                        <el-option label="烟酒类" value="烟酒类"></el-option>
+                                        <el-option label="食品" value="食品"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="关键字">
+                                    <el-input v-model="searchForm.searchKey" placeholder="商品名称或者条形码"></el-input>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" @click="onSubmit">查询</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                        <div class="text item">
+                            <el-table ref="multipleTable" :data="tableData3" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+                                <!-- 选择框 -->
+                                <el-table-column type="selection" width="55">
+                                </el-table-column>
+                                <!-- 条形码 -->
+                                <el-table-column label="条形码" width="120">
+                                    <template slot-scope="scope">{{ scope.row.barCode }}</template>
+                                </el-table-column>
+
+                                <el-table-column label="商品名称" width="120">
+                                    <template slot-scope="scope">{{ scope.row.goodsName }}</template>
+                                </el-table-column>
+
+                                <el-table-column label="所属分类" width="120">
+                                    <template slot-scope="scope">{{ scope.row.cateName }}</template>
+                                </el-table-column>
+
+                                <el-table-column label="成本价格(元)" width="120">
+                                    <template slot-scope="scope">{{ scope.row.costPrice }}</template>
+                                </el-table-column>
+                                <el-table-column label="是否促销" width="120">
+                                    <template slot-scope="scope">{{ scope.row.promotion }}</template>
+                                </el-table-column>
+                                <el-table-column label="会员优惠" width="120">
+                                    <template slot-scope="scope">{{ scope.row.discount }}</template>
+                                </el-table-column>
+
+                                <!-- 创建时间 -->
+                                <el-table-column label="日期" width="120">
+                                    <template slot-scope="scope">{{ scope.row.ctime | fCtime }}</template>
+                                </el-table-column>
+
+                                <!-- 操作 -->
+                                <el-table-column label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button size="mini" @click="handleEdit(scope.row.id)">编辑</el-button>
+                                        <el-button size="mini" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                            <!-- 分页 -->
+                            <div style="margin-top: 20px; text-align:left">
+                                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[1, 3, 5, 10, 15, 50]"
+                                    :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :total="totalcount">
+                                </el-pagination>
+                            </div>
+                            <div style="margin-top: 20px; text-align:left">
+                                <el-button @click="deleteBatch">批量删除选中</el-button>
+                                <!-- <el-button @click="toggleSelection([tableData3[0], tableData3[1]])">切换第二、第三行的选中状态</el-button> -->
+                                <el-button @click="toggleSelection()">取消选择</el-button>
+                            </div>
+                        </div>
+                    </el-card>
+                </el-main>
+
+                <!-- 右边尾部 -->
+                <el-footer>
+                    <p>
+                        &copy; copyright 2018 华联超市管理系统
+                    </p>
+                </el-footer>
+            </el-container>
+        </el-container>
+    </div>
+
+    <!-- 引入vue.js -->
+    <script src="./lib/vue/vue.min.js"></script>
+    <!-- 引入日期时间格式化插件 -->
+    <script src="./lib/moment/moment.min.js"></script>
+    <!-- 引入jquery.min.js -->
+    <script src="./lib/jquery/jquery.min.js"></script>
+    <!-- 引入elementui.min.js -->
+    <script src="./lib/elementui/js/elementui.min.js"></script>
+
+    <script>
+        // 创建vue实例
+        new Vue({
+            el: '#app',
+            // 数据
+            data() {
+                return {
+                    tableData3: [],
+                    multipleSelection: [],
+                    currentPage: 1,
+                    totalcount: 11,
+                    pageSize: 3,
+                    searchForm: {
+                        searchCateName: '',
+                        searchKey: ''
+                    }
+                }
+            },
+            // 生命周期构造函数 vue实例创建完毕 还没有挂载dom 适合准备数据
+            created() {
+                // console.log('生命周期的钩子函数created，这个周期适合初始化数据')
+                // 调用请求所有用户数据的方法
+                this.getUsers();
+            },
+            methods: {
+                // 查询表单提交
+                onSubmit() {
+
+                    // 直接调用请求函数 查询的结果 进行分页
+                    this.getUsers();
+
+                    // 保留this
+                    // var _this = this;
+                    // 收集查询条件
+                    // var searchData = {
+                    //     searchCateName: this.searchForm.searchCateName,
+                    //     searchKey: this.searchForm.searchKey
+                    // }
+                    
+                    // 发送请求 把查询条件发送给后端
+                    // $.post('/goods/search', searchData, function (data) {
+                    //     _this.tableData3 = data;
+                    // })
+                },
+                // 请求所有数据的方法 改造成 请求分页数据
+                getUsers() {
+                    // 保留this
+                    var _this = this;
+                    // 分页的参数 前端需要发送给后端 
+                    var pageParams = {
+                        pageSize: this.pageSize,
+                        currentPage: this.currentPage,
+                        searchCateName: this.searchForm.searchCateName,
+                        searchKey: this.searchForm.searchKey
+                    };
+
+                    $.post('/goods/userlist', pageParams, function(data) {
+                        // 把后端返回的数据（总条数 每页对应的数据 赋值）
+                        _this.totalcount = data.totalcount;
+                        _this.tableData3 = data.pageData;
+                    });
+                },
+                // 删除方法
+                handleDelete(id) {
+                    // 保留this
+                    var _this = this;
+                    // 发送ajax请求 把id传给后端
+                    $.get(`/goods/delete?id=${id}`,function(data) {
+                        // console.log('后端返回的数据', data);
+                        if(data.errcode == "1") {
+                            // 弹出删除成功的提示
+                            alert(data.msg);
+                            // 刷新页面
+                            _this.getUsers();
+
+                        } else {
+                            // 弹出删除失败的提示
+                            alert(data.msg);
+                        }
+                    })
+                },
+                // 批量删除
+                deleteBatch() {
+                    // 保留this
+                    var _this = this;
+                    // 收集勾选的数据的id
+                    var ids = this.multipleSelection.map(v => v.id);
+
+                    // 如果没有id（没有选中）
+                    if(!ids.length) {
+                        alert("请选择以后再操作");
+                        return false;
+                    };
+
+                    // 构造ajax 把批量选中的id们，发送给后端
+                    $.post('/users/deleteBatch',{ "ids": ids },function(data) {
+                        if(data.errcode == "1") {
+                            alert(data.msg);
+                            _this.getUsers(); // 调用重新请求数据方法 刷新页面
+                        } else {
+                            alert(data.msg);
+                        }
+                    })
+
+                },
+                // 修改方法
+                handleEdit(id) {
+                    // 跳转到修改页面，把id传过去
+                    location.href = './userEdit.html?id=' + id;
+                },
+                // 切换选中（以传入的数据为准） 和 取消选中
+                toggleSelection(rows) {
+                    if(rows) {
+                        rows.forEach(row => {
+                            this.$refs.multipleTable.toggleRowSelection(row);
+                        });
+                    } else {
+                        this.$refs.multipleTable.clearSelection();
+                    }
+                },
+                // 勾选选框，就会触发，可以收集到勾选的数据，数据的结果是一个数组
+                handleSelectionChange(val) {
+                    this.multipleSelection = val;
+                    // console.log('勾选触发的函数接收的值：', this.multipleSelection);
+                },
+                // 每页显示条数改变 pageSize 改变
+                handleSizeChange(val) {
+                    this.pageSize = val;
+                    this.getUsers();  // pageSize 改变 重新计算
+                },
+                // 当前页码改变  currentPage
+                handleCurrentChange(val) {
+                    this.currentPage = val;
+                    this.getUsers();  // 当前页码改变 重新计算一次
+                }
+            },
+            // 过滤器
+            filters: {
+                // 表格时间格式化
+                fCtime(value) {
+                    return moment(value).format("YYYY-MM-DD");
+                }
+            }
+        })
+
+    </script>
+
+</body>
+
+</html>

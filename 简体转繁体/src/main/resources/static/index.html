@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简体转繁体</title>
+    <script src="js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<div>
+    <textarea name="text1" id="text01" cols="30" rows="20" style="width: 350px;height: 350px"></textarea>
+    <button onclick="f()" style="width: 60px;height: 60px; border-radius: 5px;background-color: pink">提交</button>
+    <button onclick="f2()" style="width: 60px;height: 60px; border-radius: 5px;background-color: pink">情空</button>
+    <textarea name="text2" onclick="copy()" id="text02" cols="30" rows="20" style="width: 350px;height: 350px"></textarea>
+    <p id="alertMsg"></p>
+</div>
+<script>
+    var str = document.getElementById("text01");
+    var str2 = document.getElementById("text02");
+
+    function copy () {
+        clearTimeout(copyTime);
+        str2.select();
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        var alertMsg = document.querySelector("#alertMsg");
+        alertMsg.innerHTML = "复制成功！文字将在3秒后清空";
+        var copyTime = setTimeout(function () {
+            str.value = '';
+            str2.value = "";
+            alertMsg.innerHTML = "";
+        },3000)
+    }
+</script>
+<script>
+    function f() {
+        var  a=document.getElementById("text01").value;
+        $.ajax({
+            url:"update",
+            type:"post",
+            dataType:"json",
+            data:{"firest":a},
+            success:function (t) {
+                document.getElementById("text02").value=t.firest;
+            },error:function () {
+                alert("有毛病")
+            }
+
+        })
+    }
+    function f2() {
+        document.getElementById("text01").value=" ";
+        document.getElementById("text02").value=" ";
+    }
+</script>
+</body>
+</html>

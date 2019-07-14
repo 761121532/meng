@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>测试ui框架页面</title>
+    <!-- 引入elementui.css -->
+    <link rel="stylesheet" href="./lib/elementui/css/elementui.css">
+    <!-- 引入重置样式 -->
+    <link rel="stylesheet" href="./styles/reset.css">
+    <!-- 引入自定义样式index.css -->
+    <link rel="stylesheet" href="./styles/index.css">
+
+</head>
+
+<body>
+
+    <!-- 准备dom -->
+    <div id="app">
+        <el-container>
+            <!-- 右边部分 -->
+            <el-container>
+                <!-- 右边头部 -->
+                <el-header>
+                    <h1>欢迎您, admin</h1>
+                    <p>查看详细的系统信息</p>
+                </el-header>
+
+                <!-- 右边主体 -->
+                <el-main>
+                    <el-card class="box-card">
+                        <div slot="header" class="clearfix">
+                            <span>修改账号</span>
+                        </div>
+                        <div class="text item">
+                            <!-- 添加账号表单内容 -->
+                            <el-row>
+                                <el-col :span="10">
+                                    <div class="grid-content bg-purple">
+                                        <!-- 添加账号表单 -->
+                                        <el-form :model="ruleForm2" status-icon :rules="rules2" ref="ruleForm2" label-width="100px" class="demo-ruleForm">
+
+                                            <el-form-item label="账号" prop="username">
+                                                <el-input type="text" v-model="ruleForm2.username" auto-complete="off"></el-input>
+                                            </el-form-item>
+
+                                            <el-form-item label="密码" prop="pass">
+                                                <el-input type="password" v-model="ruleForm2.pass" auto-complete="off"></el-input>
+                                            </el-form-item>
+
+                                            <!-- <el-form-item label="确认密码" prop="checkPass">
+                                                <el-input type="password" v-model="ruleForm2.checkPass" auto-complete="off"></el-input>
+                                            </el-form-item> -->
+
+                                            <el-form-item label="实名" prop="realname">
+                                                <el-input v-model.number="ruleForm2.realname"></el-input>
+                                            </el-form-item>
+
+                                            <el-form-item label="用户组" prop="usergroup">
+                                                <el-select v-model="ruleForm2.usergroup" placeholder="请选择活动区域">
+                                                    <el-option label="超级管理员" value="超级管理员"></el-option>
+                                                    <el-option label="普通管理员" value="普通管理员"></el-option>
+                                                    <el-option label="普通用户" value="普通用户"></el-option>
+                                                </el-select>
+                                            </el-form-item>
+
+                                            <el-form-item>
+                                                <el-button type="success" @click="submitForm('ruleForm2')">修改</el-button>
+                                                <el-button @click="resetForm('ruleForm2')">重置</el-button>
+                                            </el-form-item>
+                                        </el-form>
+
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-card>
+                </el-main>
+
+                <!-- 右边尾部 -->
+                <el-footer>
+                    <p>
+                        &copy; copyright 2018 华联超市管理系统
+                    </p>
+                </el-footer>
+            </el-container>
+        </el-container>
+    </div>
+
+    <!-- 引入vue.js -->
+    <script src="./lib/vue/vue.min.js"></script>
+    <!-- 引入jquery -->
+    <script src="./lib/jquery/jquery.min.js"></script>
+    <!-- 引入elementui.min.js -->
+    <script src="./lib/elementui/js/elementui.min.js"></script>
+
+    <script>
+        // 创建vue实例
+        new Vue({
+            el: '#app',
+            data() {
+                // 检测密码的一致性的函数
+                var validatePass2 = (rule,value,callback) => {
+                    if(value === '') {
+                        callback(new Error('请再次输入密码'));
+                    } else if(value !== this.ruleForm2.pass) {
+                        callback(new Error('两次输入密码不一致!'));
+                    } else {
+                        callback();
+                    }
+                };
+                return {
+                    // 验证数据
+                    ruleForm2: {
+                        username: '',
+                        pass: '',
+                        checkPass: '',
+                        realname: '',
+                        usergroup: '',
+                    },
+                    id: '',
+                    // 验证规则
+                    rules2: {
+                        username: [
+                            { required: true,message: '请输入用户名',trigger: 'blur' },
+                            { min: 6,max: 18,message: '长度在 6 到 18 个字符',trigger: 'blur' }
+                        ],
+                        pass: [
+                            { required: true,message: '请输入密码',trigger: 'blur' }
+                        ],
+                        checkPass: [
+                            { validator: validatePass2, trigger: 'blur' }
+                        ],
+                        realname: [
+                            { required: true,message: '请输入真实姓名',trigger: 'blur' }
+                        ],
+                        usergroup: [
+                            { required: true,message: '请选择用户组',trigger: 'change' }
+                        ]
+                    }
+                };
+            },
+            // 生命周期钩子函数
+            created () {
+                // 保留this
+                var _this = this;
+
+                // 获取id
+                var id = location.href.split('=')[1];
+                this.id = id; // 把获取的id 给data里面的字段
+                // console.log('获取到的id是:', id);
+                // 发送ajax请求,把id传给后端
+                $.get('/users/getOne?id='+id, function (data) {
+                    // 把请求到的数据 回填表单
+                    _this.ruleForm2.username = data[0].username;
+                    _this.ruleForm2.pass = data[0].password;
+                    _this.ruleForm2.realname = data[0].realname;
+                    _this.ruleForm2.usergroup = data[0].usergroup;
+                });
+                
+            },
+            methods: {
+                // 提交
+                submitForm(formName) {
+                    this.$refs[formName].validate((valid) => {
+                        if(valid) {
+                            // 收集所有修改后的新数据 和 一个原来的id
+                            var userInfo = {
+                                username: this.ruleForm2.username,
+                                pass: this.ruleForm2.pass,
+                                realname: this.ruleForm2.realname,
+                                usergroup: this.ruleForm2.usergroup,
+                                id: this.id
+                            }
+                            // console.log('添加用户需要提交的数据：', userInfo);        
+                            // 发送ajax请求
+                            $.post('/users/saveedit', userInfo, function (data) {
+                                if (data.errcode == "1") {
+                                    alert(data.msg); // 弹出修改成功
+                                    location.href = "./userList.html"; // 跳转到用户列表会自动刷新页面
+                                } else {
+                                    alert(data.msg); // 弹出修改失败
+                                }
+                            })
+                            
+
+                        } else {
+                            console.log('error submit!!');
+                            return false;
+                        }
+                    });
+                },
+                // 重置
+                resetForm(formName) {
+                    this.$refs[formName].resetFields();
+                }
+            }
+        })
+
+    </script>
+
+</body>
+
+</html>

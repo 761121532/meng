@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.hlmarket.dao.UserMapper">
+
+    <select id="login" resultType="com.example.hlmarket.entity.User" parameterType="com.example.hlmarket.entity.User">
+        SELECT * FROM users WHERE username=#{username}
+    </select>
+
+    <insert id="UserAdd" parameterType="com.example.hlmarket.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username,password,realname,usergroup) VALUE (#{username},#{password},#{realname},#{usergroup});
+    </insert>
+
+</mapper>
